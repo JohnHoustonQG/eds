@@ -35,6 +35,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #include <eds/edid.h>
 #include <eds/hdmi.h>
@@ -801,32 +802,68 @@ main(int argc, char **argv)
     uint8_t *buffer = NULL;
     FILE *edid = NULL;
     long length = 0;
+    long size = 0;
     int rv = EXIT_FAILURE;
 
-    if (argc != 2) {
-        printf("usage: %s <edid data file>\n", argv[0]);
-        return EXIT_FAILURE;
+    bool help = argc > 1 && (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0);
+    if (help || argc > 2) {
+        printf("usage: %s [-h|--help] [<edid data file>]\n", argv[0]);
+        printf("  if no filename parameter given, or if file name is \"-\", reads from stdin\n");
+        if (help)
+            rv = EXIT_SUCCESS;
+        return rv;
+    }
+    
+    if (argc == 1 || (argc == 2 && strcmp(argv[1], "-") == 0)) {
+        size = EDID_BLOCK_SIZE;
+        if ((buffer = calloc(size, 1)) == NULL) {
+            fprintf(stderr, "unable to allocate space for edid data\n");
+            goto out;
+        }
+
+        while (fread(buffer + length, 1, 1, stdin) > 0) {
+            if (++length == size)
+            {
+                size += EDID_BLOCK_SIZE;
+                uint8_t *newbuffer = realloc(buffer, size);
+                if (newbuffer == NULL) {
+                    fprintf(stderr, "unable to reallocate space for edid data\n");
+                    goto out;
+                }
+                buffer = newbuffer; 
+            }
+        }
+
+        // could realloc again here to shrink buffer if length < size
+        // but it doesn't seem to be necessary
+
+    } else {
+
+        if ((edid = fopen(argv[1], "rb")) == NULL) {
+            fprintf(stderr, "unable to open EDID data: %s\n", strerror(errno));
+            goto out;
+        }
+
+        fseek(edid, 0, SEEK_END);
+        length = ftell(edid);
+        fseek(edid, 0, SEEK_SET);
+
+        if ((buffer = calloc(length, 1)) == NULL) {
+            fprintf(stderr, "unable to allocate space for edid data\n");
+            goto out;
+        }
+
+        if (fread(buffer, 1, length, edid) != length) {
+            fprintf(stderr, "unable to read EDID: %s\n", strerror(errno));
+            goto out;
+        }
     }
 
-    if ((edid = fopen(argv[1], "rb")) == NULL) {
-        fprintf(stderr, "unable to open EDID data: %m\n");
+    if (length < EDID_BLOCK_SIZE) {
+        fprintf(stderr, "invalid input data length, less than 1 %u-byte EDID block\n", EDID_BLOCK_SIZE);
         goto out;
     }
-
-    fseek(edid, 0, SEEK_END);
-    length = ftell(edid);
-    fseek(edid, 0, SEEK_SET);
-
-    if ((buffer = calloc(length, 1)) == NULL) {
-        fprintf(stderr, "unable to allocate space for edid data\n");
-        goto out;
-    }
-
-    if (fread(buffer, 1, length, edid) != length) {
-        fprintf(stderr, "unable to read EDID: %m\n");
-        goto out;
-    }
-
+ 
     parse_edid(buffer);
     rv = EXIT_SUCCESS;
 
@@ -834,8 +871,8 @@ out:
     if (edid)
         fclose(edid);
 
-    free(buffer);
+    if (buffer)
+        free(buffer);
 
     return rv;
 }
-
