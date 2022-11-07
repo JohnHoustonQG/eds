@@ -151,77 +151,77 @@ struct __attribute__ (( packed )) edid_detailed_timing_descriptor {
     unsigned interlaced                     : 1;
 };
 
-static inline uint32_t
+/*static inline*/ uint32_t
 edid_detailed_timing_pixel_clock(const struct edid_detailed_timing_descriptor * const dtb)
-{
+; /*{
     return dtb->pixel_clock * 10000;
-}
+}*/
 
-static inline uint16_t
+/*static inline*/ uint16_t
 edid_detailed_timing_horizontal_blanking(const struct edid_detailed_timing_descriptor * const dtb)
-{
+; /*{
     return (dtb->horizontal_blanking_hi << 8) | dtb->horizontal_blanking_lo;
-}
+}*/
 
-static inline uint16_t
+/*static inline*/ uint16_t
 edid_detailed_timing_horizontal_active(const struct edid_detailed_timing_descriptor * const dtb)
-{
+; /*{
     return (dtb->horizontal_active_hi << 8) | dtb->horizontal_active_lo;
-}
+}*/
 
-static inline uint16_t
+/*static inline*/ uint16_t
 edid_detailed_timing_vertical_blanking(const struct edid_detailed_timing_descriptor * const dtb)
-{
+; /*{
     return (dtb->vertical_blanking_hi << 8) | dtb->vertical_blanking_lo;
-}
+}*/
 
-static inline uint16_t
+/*static inline*/ uint16_t
 edid_detailed_timing_vertical_active(const struct edid_detailed_timing_descriptor * const dtb)
-{
+; /*{
     return (dtb->vertical_active_hi << 8) | dtb->vertical_active_lo;
-}
+}*/
 
-static inline uint8_t
+/*static inline*/ uint8_t
 edid_detailed_timing_vertical_sync_offset(const struct edid_detailed_timing_descriptor * const dtb)
-{
+; /*{
     return (dtb->vertical_sync_offset_hi << 4) | dtb->vertical_sync_offset_lo;
-}
+}*/
 
-static inline uint8_t
+/*static inline*/ uint8_t
 edid_detailed_timing_vertical_sync_pulse_width(const struct edid_detailed_timing_descriptor * const dtb)
-{
+; /*{
     return (dtb->vertical_sync_pulse_width_hi << 4) | dtb->vertical_sync_pulse_width_lo;
-}
+}*/
 
-static inline uint8_t
+/*static inline*/ uint8_t
 edid_detailed_timing_horizontal_sync_offset(const struct edid_detailed_timing_descriptor * const dtb)
-{
+; /*{
     return (dtb->horizontal_sync_offset_hi << 4) | dtb->horizontal_sync_offset_lo;
-}
+}*/
 
-static inline uint8_t
+/*static inline*/ uint8_t
 edid_detailed_timing_horizontal_sync_pulse_width(const struct edid_detailed_timing_descriptor * const dtb)
-{
+; /*{
     return (dtb->horizontal_sync_pulse_width_hi << 4) | dtb->horizontal_sync_pulse_width_lo;
-}
+}*/
 
-static inline uint16_t
+/*static inline*/ uint16_t
 edid_detailed_timing_horizontal_image_size(const struct edid_detailed_timing_descriptor * const dtb)
-{
+; /*{
     return (dtb->horizontal_image_size_hi << 8) | dtb->horizontal_image_size_lo;
-}
+}*/
 
-static inline uint16_t
+/*static inline*/ uint16_t
 edid_detailed_timing_vertical_image_size(const struct edid_detailed_timing_descriptor * const dtb)
-{
+; /*{
     return (dtb->vertical_image_size_hi << 8) | dtb->vertical_image_size_lo;
-}
+}*/
 
-static inline uint8_t
+/*static inline*/ uint8_t
 edid_detailed_timing_stereo_mode(const struct edid_detailed_timing_descriptor * const dtb)
-{
+; /*{
     return (dtb->stereo_mode_hi << 2 | dtb->stereo_mode_lo);
-}
+}*/
 
 
 struct __attribute__ (( packed )) edid_monitor_descriptor {
@@ -260,15 +260,15 @@ struct __attribute__ (( packed )) edid_standard_timing_descriptor {
     unsigned image_aspect_ratio : 2;
 };
 
-const inline uint32_t
+/*const inline*/ uint32_t
 edid_standard_timing_horizontal_active(const struct edid_standard_timing_descriptor * const desc)
-{
+; /*{
     return ((desc->horizontal_active_pixels + 31) << 3);
-}
+}*/
 
-const inline uint32_t
+/*const inline*/ uint32_t
 edid_standard_timing_vertical_active(const struct edid_standard_timing_descriptor * const desc)
-{
+; /*{
     const uint32_t hres = edid_standard_timing_horizontal_active(desc);
 
     switch (desc->image_aspect_ratio) {
@@ -283,13 +283,13 @@ edid_standard_timing_vertical_active(const struct edid_standard_timing_descripto
     }
 
     return hres;
-}
+}*/
 
-const inline uint32_t
+/*const inline*/ uint32_t
 edid_standard_timing_refresh_rate(const struct edid_standard_timing_descriptor * const desc)
-{
+; /*{
     return (desc->refresh_rate + 60);
-}
+}*/
 
 
 struct __attribute__ (( packed )) edid {
@@ -400,33 +400,33 @@ struct __attribute__ (( packed )) edid {
     uint8_t  checksum;
 };
 
-static inline void
+/*static inline*/ void
 edid_manufacturer(const struct edid * const edid, char manufacturer[4])
-{
+; /*{
     manufacturer[0] = '@' + ((edid->manufacturer & 0x007c) >> 2);
     manufacturer[1] = '@' + (((edid->manufacturer & 0x0003) >> 00) << 3)
                           | (((edid->manufacturer & 0xe000) >> 13) << 0);
     manufacturer[2] = '@' + ((edid->manufacturer & 0x1f00) >> 8);
     manufacturer[3] = '\0';
-}
+}*/
 
-static inline double
+/*static inline*/ double
 edid_gamma(const struct edid * const edid)
-{
+; /*{
     return (edid->display_transfer_characteristics + 100) / 100.0;
-}
+}*/
 
-static inline bool
+/*static inline*/ bool
 edid_detailed_timing_is_monitor_descriptor(const struct edid * const edid,
                                            const uint8_t timing)
-{
+; /*{
     const struct edid_monitor_descriptor * const mon =
         &edid->detailed_timings[timing].monitor;
 
     assert(timing < ARRAY_SIZE(edid->detailed_timings));
 
     return mon->flag0 == 0x0000 && mon->flag1 == 0x00 && mon->flag2 == 0x00;
-}
+}*/
 
 
 struct __attribute__ (( packed )) edid_color_characteristics_data {
@@ -436,9 +436,9 @@ struct __attribute__ (( packed )) edid_color_characteristics_data {
     } red, green, blue, white;
 };
 
-static inline struct edid_color_characteristics_data
+/*static inline*/ struct edid_color_characteristics_data
 edid_color_characteristics(const struct edid * const edid)
-{
+; /*{
     const struct edid_color_characteristics_data characteristics = {
         .red = {
             .x = (edid->red_x << 2) | edid->red_x_low,
@@ -459,7 +459,7 @@ edid_color_characteristics(const struct edid * const edid)
     };
 
     return characteristics;
-}
+}*/
 
 
 struct __attribute__ (( packed )) edid_block_map {
@@ -477,9 +477,9 @@ struct __attribute__ (( packed )) edid_extension {
 };
 
 
-static inline bool
+/*static inline*/ bool
 edid_verify_checksum(const uint8_t * const block)
-{
+; /*{
     uint8_t checksum = 0;
     int i;
 
@@ -487,20 +487,20 @@ edid_verify_checksum(const uint8_t * const block)
         checksum += block[i];
 
     return (checksum == 0);
-}
+}*/
 
-static inline double
+/*static inline*/ double
 edid_decode_fixed_point(uint16_t value)
-{
+; /*{
     double result = 0.0;
 
-    assert((~value & 0xfc00) == 0xfc00);    /* edid fraction is 10 bits */
+    assert((~value & 0xfc00) == 0xfc00);    / * edid fraction is 10 bits * /
 
     for (uint8_t i = 0; value && (i < 10); i++, value >>= 1)
         result = result + ((value & 0x1) * (1.0 / (1 << (10 - i))));
 
     return result;
-}
+}*/
 
 #endif
 

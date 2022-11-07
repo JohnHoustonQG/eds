@@ -21,8 +21,11 @@ if(NOT HAVE_SQRT)
   set(LIBM_LIBS m)
 endif()
 
+check_function_exists(strchrnul HAVE_STRCHRNUL)
+
 if(WITH_EXAMPLES)
   add_executable(parse-edid
+    src/eds/edid.c
     src/examples/parse-edid/parse-edid.c)
   if(MSVC)
     target_compile_options(parse-edid PRIVATE
@@ -30,6 +33,10 @@ if(WITH_EXAMPLES)
   else()
     target_compile_options(parse-edid PRIVATE
       -include;${CMAKE_SOURCE_DIR}/src/eds/macros.h)
+  endif()
+  if(NOT HAVE_STRCHRNUL)
+    target_compile_definitions(parse-edid PRIVATE
+      NO_STRCHRNUL=1)
   endif()
   target_include_directories(parse-edid PRIVATE
     src

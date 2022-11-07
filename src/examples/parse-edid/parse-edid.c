@@ -46,6 +46,16 @@
 #define HZ_2_MHZ(hz)                            ((hz) / 1000000)
 
 
+#ifdef NO_STRCHRNUL
+char *strchrnul(const char *s, int c) {
+   char *ptr = strchr(s, c);
+   if (!ptr)
+       ptr = strchr(s, '\0');
+   return ptr;
+}
+#endif
+
+
 static inline void
 dump_section(const char * const name,
              const uint8_t * const buffer,
