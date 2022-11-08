@@ -800,7 +800,7 @@ int
 main(int argc, char **argv)
 {
     uint8_t *buffer = NULL;
-    FILE *edid = NULL;
+    FILE *source = NULL;
     long length = 0;
     long size = 0;
     int rv = EXIT_FAILURE;
@@ -815,61 +815,47 @@ main(int argc, char **argv)
     }
     
     if (argc == 1 || (argc == 2 && strcmp(argv[1], "-") == 0)) {
-        size = EDID_BLOCK_SIZE;
-        if ((buffer = calloc(size, 1)) == NULL) {
-            fprintf(stderr, "unable to allocate space for edid data\n");
-            goto out;
-        }
-
-        while (fread(buffer + length, 1, 1, stdin) > 0) {
-            if (++length == size)
-            {
-                size += EDID_BLOCK_SIZE;
-                uint8_t *newbuffer = realloc(buffer, size);
-                if (newbuffer == NULL) {
-                    fprintf(stderr, "unable to reallocate space for edid data\n");
-                    goto out;
-                }
-                buffer = newbuffer; 
-            }
-        }
-
-        // could realloc again here to shrink buffer if length < size
-        // but it doesn't seem to be necessary
-
+        source = stdin;
     } else {
-
-        if ((edid = fopen(argv[1], "rb")) == NULL) {
+        if ((source = fopen(argv[1], "rb")) == NULL) {
             fprintf(stderr, "unable to open EDID data: %s\n", strerror(errno));
             goto out;
         }
+    }
 
-        fseek(edid, 0, SEEK_END);
-        length = ftell(edid);
-        fseek(edid, 0, SEEK_SET);
+    size = EDID_BLOCK_SIZE;
+    if ((buffer = malloc(size)) == NULL) {
+        fprintf(stderr, "unable to allocate space for EDID data\n");
+        goto out;
+    }
 
-        if ((buffer = calloc(length, 1)) == NULL) {
-            fprintf(stderr, "unable to allocate space for edid data\n");
-            goto out;
-        }
-
-        if (fread(buffer, 1, length, edid) != length) {
-            fprintf(stderr, "unable to read EDID: %s\n", strerror(errno));
-            goto out;
+    while (fread(buffer + length, 1, 1, source) > 0) {
+        if (++length == size)
+        {
+            size += EDID_BLOCK_SIZE;
+            uint8_t *newbuffer = realloc(buffer, size);
+            if (newbuffer == NULL) {
+                fprintf(stderr, "unable to reallocate space for EDID data\n");
+                goto out;
+            }
+            buffer = newbuffer; 
         }
     }
+
+    // could realloc again here to shrink buffer if length < size
+    // but it doesn't seem to be necessary
 
     if (length < EDID_BLOCK_SIZE) {
         fprintf(stderr, "invalid input data length, less than 1 %u-byte EDID block\n", EDID_BLOCK_SIZE);
         goto out;
     }
- 
+
     parse_edid(buffer);
     rv = EXIT_SUCCESS;
 
 out:
-    if (edid)
-        fclose(edid);
+    if (source && source != stdin)
+        fclose(source);
 
     if (buffer)
         free(buffer);
