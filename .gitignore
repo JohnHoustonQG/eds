@@ -10,6 +10,7 @@
 .deps
 .dirstamp
 .libs
+.DS_Store
 tags
 
 /aclocal.m4
